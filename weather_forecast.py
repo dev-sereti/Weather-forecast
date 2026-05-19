@@ -27,7 +27,7 @@ output_dir = r"C:\Users\VF4492\OneDrive - Victory Farms Ltd\Technology and Innov
 os.makedirs(output_dir, exist_ok=True)
 output_file = os.path.join(output_dir, "weather_data.xlsx")
 
-all_dataframes = {}
+all_dataframes = []
 
 for i, response in enumerate(responses):
     location_name = location_names[i]
@@ -70,11 +70,12 @@ for i, response in enumerate(responses):
 
     print(f"\nHourly data for {location_name}\n", hourly_dataframe)
 
-    all_dataframes[location_name] = hourly_dataframe
+    all_dataframes.append(hourly_dataframe)
 
-# Save to Excel — one sheet per location
+# Combine all locations into one dataframe and save to a single sheet
+combined_df = pd.concat(all_dataframes, ignore_index=True)
+
 with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
-    for location_name, df in all_dataframes.items():
-        df.to_excel(writer, sheet_name=location_name, index=False)
+    combined_df.to_excel(writer, sheet_name="Weather Data", index=False)
 
 print(f"\nData saved to: {output_file}")
