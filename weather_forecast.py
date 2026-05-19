@@ -30,7 +30,7 @@ output_file = os.path.join(output_dir, "weather_data.xlsx")
 all_dataframes = {}
 
 for i, response in enumerate(responses):
-    location_name = location_names[i]  # Match by position
+    location_name = location_names[i]
 
     print(f"\nLocation: {location_name}")
     print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
@@ -66,6 +66,8 @@ for i, response in enumerate(responses):
     hourly_data["wind_gusts_10m"] = hourly_wind_gusts_10m
 
     hourly_dataframe = pd.DataFrame(data=hourly_data)
+    hourly_dataframe["date"] = hourly_dataframe["date"].dt.tz_localize(None)  # Remove tz for Excel
+
     print(f"\nHourly data for {location_name}\n", hourly_dataframe)
 
     all_dataframes[location_name] = hourly_dataframe
