@@ -4,12 +4,8 @@ import requests_cache
 from retry_requests import retry
 import os
 
-# Location name mapping
-location_names = {
-    (0.5603, 34.0623): "VFfarms",
-    (2.3328, 29.0934): "KC-Kagano",
-    (2.7334, 23.11111): "KC-Kigembe"
-}
+# Location names matched by index to latitude/longitude order
+location_names = ["VFfarms", "KC-Kagano", "KC-Kigembe"]
 
 # Setup the Open-Meteo API client with cache and retry on error
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
@@ -34,14 +30,7 @@ output_file = os.path.join(output_dir, "weather_data.xlsx")
 all_dataframes = {}
 
 for i, response in enumerate(responses):
-    lat = round(abs(response.Latitude()), 4)
-    lon = round(response.Longitude(), 4)
-
-    # Look up location name
-    location_name = next(
-        (name for (la, lo), name in location_names.items() if round(abs(la), 4) == lat and round(lo, 4) == lon),
-        f"Location_{i+1}"
-    )
+    location_name = location_names[i]  # Match by position
 
     print(f"\nLocation: {location_name}")
     print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
