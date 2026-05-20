@@ -5,7 +5,7 @@ from retry_requests import retry
 import os
 
 # Location names matched by index to latitude/longitude order
-location_names = ["VFfarms", "KC-Kagano", "KC-Kigembe"]
+location_names = ["Roo Farm", "KC-Kagano", "KC-Kigembe"]
 
 # Setup the Open-Meteo API client with cache and retry on error
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
