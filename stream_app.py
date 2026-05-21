@@ -476,8 +476,7 @@ if fetch_button or 'forecast_data' in st.session_state:
                     tick_text = [d.strftime("%H:%M") for d in tick_vals]
                     x_title = "Hour"
                 else:
-                    tick_text = [d.strftime("%b %d
-%H:%M") for d in tick_vals]
+                    tick_text = [d.strftime("%b %d %H:%M") for d in tick_vals]
                     x_title = "Date & Hour"
 
                 fig.update_xaxes(
@@ -552,8 +551,7 @@ if fetch_button or 'forecast_data' in st.session_state:
                             tick_text_var = [d.strftime("%H:%M") for d in tick_vals_var]
                             x_title_var = "Hour"
                         else:
-                            tick_text_var = [d.strftime("%b %d
-%H:%M") for d in tick_vals_var]
+                            tick_text_var = [d.strftime("%b %d %H:%M") for d in tick_vals_var]
                             x_title_var = "Date & Hour"
 
                         fig_var.update_xaxes(
@@ -611,8 +609,7 @@ if fetch_button or 'forecast_data' in st.session_state:
                         tick_text_wind = [d.strftime("%H:%M") for d in tick_vals_wind]
                         x_title_wind = "Hour"
                     else:
-                        tick_text_wind = [d.strftime("%b %d
-%H:%M") for d in tick_vals_wind]
+                        tick_text_wind = [d.strftime("%b %d %H:%M") for d in tick_vals_wind]
                         x_title_wind = "Date & Hour"
 
                     fig_dir.update_xaxes(
