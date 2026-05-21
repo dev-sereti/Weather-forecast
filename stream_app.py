@@ -9,7 +9,6 @@ from plotly.subplots import make_subplots
 import io
 from datetime import datetime, timedelta
 import numpy as np
-import base64
 
 # Page configuration - using fish emoji to match Victory Farms aquatic brand
 st.set_page_config(
@@ -86,9 +85,6 @@ st.markdown("""
     div[data-testid="stSidebarUserContent"] {
         background-color: #f8fdf8;
     }
-    .export-btn {
-        background-color: #00a8e8 !important;
-    }
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
     }
@@ -130,6 +126,14 @@ UNITS = {
     "Relative Humidity": "%",
     "Wind Gusts": "m/s"
 }
+
+def hex_to_rgba(hex_color, alpha=0.15):
+    """Convert hex color to rgba string"""
+    hex_color = hex_color.lstrip('#')
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {alpha})"
 
 @st.cache_data(ttl=3600)
 def fetch_forecast_data(location_name, forecast_days=7):
@@ -228,7 +232,6 @@ def to_excel_combined(dfs_dict):
 
 # Sidebar with Victory Farms branding
 with st.sidebar:
-    # Brand header
     st.markdown('<div class="sidebar-brand">', unsafe_allow_html=True)
     st.markdown("<h2 style='color: #1a5f2a; margin-bottom: 0;'>🐟 <span class='vf-brand-text'>VICTORY</span><span class='vf-blue'>FARMS</span></h2>", unsafe_allow_html=True)
     st.markdown("<p style='color: #666; font-size: 0.8rem; margin-top: 0;'>Aquaculture Weather Intelligence</p>", unsafe_allow_html=True)
@@ -331,7 +334,7 @@ if fetch_button or 'forecast_data' in st.session_state:
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Temperature'], name="Temperature",
                               line=dict(color="#1a5f2a", width=2), mode='lines', fill='tozeroy',
-                              fillcolor="rgba(26, 95, 42, 0.1)"),
+                              fillcolor="rgba(26, 95, 42, 0.15)"),
                     row=1, col=1
                 )
 
@@ -392,7 +395,8 @@ if fetch_button or 'forecast_data' in st.session_state:
                             template="plotly_white"
                         )
                         fig_var.update_layout(height=250, showlegend=False)
-                        fig_var.update_traces(fill='tozeroy', fillcolor=f"rgba(int('{color[1:3]}', 16), int('{color[3:5]}', 16), int('{color[5:7]}', 16), 0.15)")
+                        rgba_fill = hex_to_rgba(color, 0.15)
+                        fig_var.update_traces(fill='tozeroy', fillcolor=rgba_fill)
                         st.plotly_chart(fig_var, use_container_width=True)
 
             with loc_tab2:
