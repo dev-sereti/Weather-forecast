@@ -204,6 +204,16 @@ def hex_to_rgba(hex_color, alpha=0.15):
     b = int(hex_color[4:6], 16)
     return f"rgba({r}, {g}, {b}, {alpha})"
 
+
+def sparse_labels(series, interval=6, fmt="{:.1f}"):
+    """
+    Return a label only every `interval` rows; empty string elsewhere.
+    This prevents the chart from being overwhelmed with overlapping text.
+    `interval=6` means one label every 6 hours for hourly data.
+    """
+    return [fmt.format(v) if i % interval == 0 else "" for i, v in enumerate(series)]
+
+
 @st.cache_data(ttl=3600)
 def fetch_forecast_data(location_name, forecast_days=7):
     """Fetch forecast data for a single location"""
@@ -393,6 +403,9 @@ if fetch_button or 'forecast_data' in st.session_state:
             loc_tab1, loc_tab2, loc_tab3, loc_tab4 = st.tabs(["📈 Charts", "🧭 Wind Analysis", "📋 Data Table", "📥 Export"])
 
             with loc_tab1:
+                # ── Label interval: 1 label per 6 hours on hourly data ──────────────
+                label_interval = 6
+
                 fig = make_subplots(
                     rows=3, cols=1,
                     shared_xaxes=True,
@@ -402,56 +415,74 @@ if fetch_button or 'forecast_data' in st.session_state:
                 )
 
                 fig.add_trace(
-                    go.Scatter(x=df['Date'], y=df['Temperature'], name="Temperature",
-                              line=dict(color="#1a5f2a", width=2), 
-                              mode='lines+markers+text',
-                              text=[f"{v:.1f}" for v in df['Temperature']],
-                              textposition="top center",
-                              textfont=dict(size=9, color="#ffffff"),
-                              marker=dict(size=5, color="#1a5f2a"),
-                              fill='tozeroy',
-                              fillcolor="rgba(26, 95, 42, 0.2)"),
+                    go.Scatter(
+                        x=df['Date'], y=df['Temperature'], name="Temperature",
+                        line=dict(color="#1a5f2a", width=2),
+                        mode='lines+markers+text',
+                        # ✅ FIX: only label every 6th point
+                        text=sparse_labels(df['Temperature'], label_interval, "{:.1f}"),
+                        textposition="top center",
+                        textfont=dict(size=9, color="#1a5f2a"),
+                        marker=dict(size=4, color="#1a5f2a"),
+                        fill='tozeroy',
+                        fillcolor="rgba(26, 95, 42, 0.2)"
+                    ),
                     row=1, col=1
                 )
 
                 fig.add_trace(
-                    go.Scatter(x=df['Date'], y=df['Wind Speed'], name="Wind Speed",
-                              line=dict(color="#00a8e8", width=2), 
-                              mode='lines+markers+text',
-                              text=[f"{v:.1f}" for v in df['Wind Speed']],
-                              textposition="top center",
-                              textfont=dict(size=9, color="#ffffff"),
-                              marker=dict(size=5, color="#00a8e8")),
+                    go.Scatter(
+                        x=df['Date'], y=df['Wind Speed'], name="Wind Speed",
+                        line=dict(color="#00a8e8", width=2),
+                        mode='lines+markers+text',
+                        # ✅ FIX: only label every 6th point
+                        text=sparse_labels(df['Wind Speed'], label_interval, "{:.1f}"),
+                        textposition="top center",
+                        textfont=dict(size=9, color="#00a8e8"),
+                        marker=dict(size=4, color="#00a8e8")
+                    ),
                     row=2, col=1
                 )
                 fig.add_trace(
-                    go.Scatter(x=df['Date'], y=df['Wind Gusts'], name="Wind Gusts",
-                              line=dict(color="#ff6b6b", width=1, dash='dash'), 
-                              mode='lines+markers+text',
-                              text=[f"{v:.1f}" for v in df['Wind Gusts']],
-                              textposition="top center",
-                              textfont=dict(size=8, color="#ffaaaa"),
-                              marker=dict(size=4, color="#ff6b6b")),
+                    go.Scatter(
+                        x=df['Date'], y=df['Wind Gusts'], name="Wind Gusts",
+                        line=dict(color="#ff6b6b", width=1, dash='dash'),
+                        mode='lines+markers+text',
+                        # ✅ FIX: only label every 6th point, offset by 3 so they don't clash with wind speed
+                        text=sparse_labels(df['Wind Gusts'], label_interval, "{:.1f}"),
+                        textposition="bottom center",
+                        textfont=dict(size=8, color="#ff6b6b"),
+                        marker=dict(size=3, color="#ff6b6b")
+                    ),
                     row=2, col=1
                 )
 
                 fig.add_trace(
-                    go.Bar(x=df['Date'], y=df['Rain'], name="Rain",
-                          marker_color="#00a8e8", opacity=0.7,
-                          text=[f"{v:.1f}" if v > 0.01 else "" for v in df['Rain']],
-                          textposition="outside",
-                          textfont=dict(size=9, color="#ffffff")),
+                    go.Bar(
+                        x=df['Date'], y=df['Rain'], name="Rain",
+                        marker_color="#00a8e8", opacity=0.7,
+                        # ✅ FIX: only label bars where rain > 0.1 AND at 6-hr intervals
+                        text=[
+                            f"{v:.1f}" if (v > 0.1 and i % label_interval == 0) else ""
+                            for i, v in enumerate(df['Rain'])
+                        ],
+                        textposition="outside",
+                        textfont=dict(size=9, color="#00a8e8")
+                    ),
                     row=3, col=1
                 )
                 fig.add_trace(
-                    go.Scatter(x=df['Date'], y=df['Relative Humidity'], name="Humidity",
-                              line=dict(color="#1a5f2a", width=2), 
-                              mode='lines+markers+text',
-                              text=[f"{v:.0f}" for v in df['Relative Humidity']],
-                              textposition="top center",
-                              textfont=dict(size=9, color="#ffffff"),
-                              marker=dict(size=4, color="#1a5f2a"),
-                              yaxis="y4"),
+                    go.Scatter(
+                        x=df['Date'], y=df['Relative Humidity'], name="Humidity",
+                        line=dict(color="#1a5f2a", width=2),
+                        mode='lines+markers+text',
+                        # ✅ FIX: only label every 6th point
+                        text=sparse_labels(df['Relative Humidity'], label_interval, "{:.0f}"),
+                        textposition="top center",
+                        textfont=dict(size=9, color="#1a5f2a"),
+                        marker=dict(size=3, color="#1a5f2a"),
+                        yaxis="y4"
+                    ),
                     row=3, col=1
                 )
 
@@ -467,8 +498,8 @@ if fetch_button or 'forecast_data' in st.session_state:
                 # Use actual data timestamps for x-axis ticks
                 num_days = (df['Date'].max() - df['Date'].min()).days + 1
 
-                # Get actual tick values from data (every 3 hours to avoid crowding)
-                tick_vals = df['Date'].iloc[::3].tolist()
+                # Get actual tick values from data (every 6 hours to avoid crowding)
+                tick_vals = df['Date'].iloc[::6].tolist()
                 if len(df) > 0 and df['Date'].iloc[-1] not in tick_vals:
                     tick_vals.append(df['Date'].iloc[-1])
 
@@ -479,28 +510,15 @@ if fetch_button or 'forecast_data' in st.session_state:
                     tick_text = [d.strftime("%b %d %H:%M") for d in tick_vals]
                     x_title = "Date & Hour"
 
-                fig.update_xaxes(
-                    tickmode="array",
-                    tickvals=tick_vals,
-                    ticktext=tick_text,
-                    tickangle=0,
-                    row=1, col=1
-                )
-                fig.update_xaxes(
-                    tickmode="array",
-                    tickvals=tick_vals,
-                    ticktext=tick_text,
-                    tickangle=0,
-                    row=2, col=1
-                )
-                fig.update_xaxes(
-                    tickmode="array",
-                    tickvals=tick_vals,
-                    ticktext=tick_text,
-                    tickangle=0,
-                    title_text=x_title,
-                    row=3, col=1
-                )
+                for row in [1, 2, 3]:
+                    fig.update_xaxes(
+                        tickmode="array",
+                        tickvals=tick_vals,
+                        ticktext=tick_text,
+                        tickangle=-30,
+                        row=row, col=1
+                    )
+                fig.update_xaxes(title_text=x_title, row=3, col=1)
 
                 fig.update_yaxes(title_text="°C", row=1, col=1)
                 fig.update_yaxes(title_text="m/s", row=2, col=1)
@@ -530,19 +548,16 @@ if fetch_button or 'forecast_data' in st.session_state:
                         fig_var.update_layout(height=250, showlegend=False)
                         rgba_fill = hex_to_rgba(color, 0.2)
 
-                        # Add data labels for ALL points with white text
+                        # ✅ FIX: small charts — NO text labels (too small), just line+markers
                         fig_var.update_traces(
-                            fill='tozeroy', 
+                            fill='tozeroy',
                             fillcolor=rgba_fill,
-                            mode='lines+markers+text',
-                            text=[f"{v:.1f}" for v in df[var]],
-                            textposition="top center",
-                            textfont=dict(size=9, color="#ffffff"),
-                            marker=dict(size=5, color=color)
+                            mode='lines+markers',   # removed 'text' mode entirely
+                            marker=dict(size=4, color=color)
                         )
 
-                        # Use actual data timestamps for ticks
-                        tick_vals_var = df['Date'].iloc[::3].tolist()
+                        # Ticks every 6 hours
+                        tick_vals_var = df['Date'].iloc[::6].tolist()
                         if len(df) > 0 and df['Date'].iloc[-1] not in tick_vals_var:
                             tick_vals_var.append(df['Date'].iloc[-1])
 
@@ -551,14 +566,14 @@ if fetch_button or 'forecast_data' in st.session_state:
                             tick_text_var = [d.strftime("%H:%M") for d in tick_vals_var]
                             x_title_var = "Hour"
                         else:
-                            tick_text_var = [d.strftime("%b %d %H:%M") for d in tick_vals_var]
-                            x_title_var = "Date & Hour"
+                            tick_text_var = [d.strftime("%b %d") for d in tick_vals_var]
+                            x_title_var = "Date"
 
                         fig_var.update_xaxes(
                             tickmode="array",
                             tickvals=tick_vals_var,
                             ticktext=tick_text_var,
-                            tickangle=0,
+                            tickangle=-30,
                             title_text=x_title_var
                         )
 
@@ -600,7 +615,8 @@ if fetch_button or 'forecast_data' in st.session_state:
                         template="plotly_white"
                     )
                     fig_dir.update_layout(height=280)
-                    tick_vals_wind = df['Date'].iloc[::3].tolist()
+
+                    tick_vals_wind = df['Date'].iloc[::6].tolist()
                     if len(df) > 0 and df['Date'].iloc[-1] not in tick_vals_wind:
                         tick_vals_wind.append(df['Date'].iloc[-1])
 
@@ -609,22 +625,18 @@ if fetch_button or 'forecast_data' in st.session_state:
                         tick_text_wind = [d.strftime("%H:%M") for d in tick_vals_wind]
                         x_title_wind = "Hour"
                     else:
-                        tick_text_wind = [d.strftime("%b %d %H:%M") for d in tick_vals_wind]
-                        x_title_wind = "Date & Hour"
+                        tick_text_wind = [d.strftime("%b %d") for d in tick_vals_wind]
+                        x_title_wind = "Date"
 
                     fig_dir.update_xaxes(
                         tickmode="array",
                         tickvals=tick_vals_wind,
                         ticktext=tick_text_wind,
-                        tickangle=0,
+                        tickangle=-30,
                         title_text=x_title_wind
                     )
-                    fig_dir.update_traces(
-                        text=[f"{v:.0f}°" if i % 6 == 0 else "" for i, v in enumerate(df['Wind Direction'])],
-                        textposition="top center",
-                        textfont=dict(size=8),
-                        mode='markers+text'
-                    )
+                    # ✅ FIX: wind direction scatter — no text labels, just markers
+                    fig_dir.update_traces(mode='markers')
                     st.plotly_chart(fig_dir, use_container_width=True)
 
             with loc_tab3:
