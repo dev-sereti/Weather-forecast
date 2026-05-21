@@ -21,6 +21,7 @@ st.set_page_config(
 # Custom CSS with Victory Farms brand colors (green and blue)
 st.markdown("""
 <style>
+    /* Main content styling */
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
@@ -67,58 +68,92 @@ st.markdown("""
         color: #00a8e8;
         font-weight: bold;
     }
+
+    /* ===== DARK SIDEBAR THEME ===== */
+    section[data-testid="stSidebar"] {
+        background-color: #262730 !important;
+    }
+    section[data-testid="stSidebar"] > div {
+        background-color: #262730 !important;
+    }
+    div[data-testid="stSidebarUserContent"] {
+        background-color: #262730 !important;
+    }
+
+    /* Sidebar text - ALL WHITE/LIGHT */
+    section[data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h4 {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    section[data-testid="stSidebar"] p {
+        color: #ffffff !important;
+    }
+    section[data-testid="stSidebar"] label {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+    }
+    section[data-testid="stSidebar"] .stMarkdown {
+        color: #ffffff !important;
+    }
+
+    /* Sidebar brand area */
     .sidebar-brand {
         text-align: center;
         padding: 1rem 0;
-        border-bottom: 2px solid #e0e0e0;
+        border-bottom: 1px solid #404040;
         margin-bottom: 1rem;
     }
-    .stButton>button {
-        background-color: #1a5f2a !important;
-        color: white !important;
+    .sidebar-brand h2 {
+        color: #ffffff !important;
+    }
+
+    /* Sidebar button - red/coral like the image */
+    section[data-testid="stSidebar"] .stButton>button {
+        background-color: #ff4b4b !important;
+        color: #ffffff !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
+        border: none !important;
     }
-    .stButton>button:hover {
-        background-color: #147a20 !important;
+    section[data-testid="stSidebar"] .stButton>button:hover {
+        background-color: #ff6b6b !important;
     }
-    div[data-testid="stSidebarUserContent"] {
-        background-color: #f8fdf8;
+
+    /* Checkboxes - red checked state */
+    section[data-testid="stSidebar"] [data-testid="stCheckbox"] input:checked + div {
+        background-color: #ff4b4b !important;
+        border-color: #ff4b4b !important;
     }
-    /* Fix sidebar text visibility */
-    div[data-testid="stSidebarUserContent"] h1,
-    div[data-testid="stSidebarUserContent"] h2,
-    div[data-testid="stSidebarUserContent"] h3,
-    div[data-testid="stSidebarUserContent"] h4 {
-        color: #1a5f2a !important;
-    }
-    div[data-testid="stSidebarUserContent"] p,
-    div[data-testid="stSidebarUserContent"] label,
-    div[data-testid="stSidebarUserContent"] .stMarkdown {
-        color: #333333 !important;
-    }
-    div[data-testid="stSidebarUserContent"] .stSlider label {
-        color: #1a5f2a !important;
-        font-weight: 600 !important;
-    }
-    /* Checkbox labels */
-    div[data-testid="stSidebarUserContent"] [data-testid="stCheckbox"] label {
-        color: #333333 !important;
+    section[data-testid="stSidebar"] [data-testid="stCheckbox"] label span {
+        color: #ffffff !important;
         font-weight: 500 !important;
     }
-    /* Section headers in sidebar */
-    div[data-testid="stSidebarUserContent"] .stMarkdown h3 {
-        color: #1a5f2a !important;
-        font-weight: 700 !important;
-        margin-top: 1rem !important;
+
+    /* Slider styling */
+    section[data-testid="stSidebar"] .stSlider label {
+        color: #ffffff !important;
+        font-weight: 500 !important;
     }
-    /* Ensure all sidebar text is dark enough */
-    section[data-testid="stSidebar"] {
-        color: #333333;
+    section[data-testid="stSidebar"] .stSlider [data-testid="stThumbValue"] {
+        color: #ff4b4b !important;
+        font-weight: 600 !important;
     }
-    section[data-testid="stSidebar"] .stCheckbox label span {
-        color: #333333 !important;
+    section[data-testid="stSidebar"] [data-baseweb="slider"] [role="slider"] {
+        background-color: #ff4b4b !important;
     }
+
+    /* Dividers */
+    section[data-testid="stSidebar"] hr {
+        border-color: #404040 !important;
+    }
+
+    /* Tabs in main content */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
     }
@@ -264,31 +299,32 @@ def to_excel_combined(dfs_dict):
             df.to_excel(writer, sheet_name=f'{location}', index=False)
     return output.getvalue()
 
-# Sidebar with Victory Farms branding
+# Sidebar with dark theme matching reference image
 with st.sidebar:
     st.markdown('<div class="sidebar-brand">', unsafe_allow_html=True)
-    st.markdown("<h2 style='color: #1a5f2a; margin-bottom: 0;'>🐟 <span class='vf-brand-text'>VICTORY</span><span class='vf-blue'>FARMS</span></h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #666; font-size: 0.8rem; margin-top: 0;'>Aquaculture Weather Intelligence</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #ffffff; margin-bottom: 0; font-size: 1.3rem;'>🐟 VICTORY<span style='color: #00a8e8;'>FARMS</span></h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #aaaaaa; font-size: 0.75rem; margin-top: 0.2rem;'>Aquaculture Weather Intelligence</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("<h3 style='color: #1a5f2a; font-weight: 700;'>⚙️ Forecast Settings</h3>", unsafe_allow_html=True)
+    st.markdown("### ⚙️ Controls")
 
-    st.markdown("<h3 style='color: #1a5f2a; font-weight: 700;'>📍 Farm Locations</h3>", unsafe_allow_html=True)
+    st.markdown("### 📍 Select Locations")
     selected_locations = []
     for loc in LOCATIONS.keys():
         if st.checkbox(loc, value=True, key=f"chk_{loc}"):
             selected_locations.append(loc)
 
-    st.markdown("<h3 style='color: #1a5f2a; font-weight: 700;'>📅 Forecast Range</h3>", unsafe_allow_html=True)
-    forecast_days = st.slider("Forecast Days", min_value=1, max_value=14, value=7, 
+    st.markdown("### 📅 Time Range")
+    forecast_days = st.slider("Past Days", min_value=1, max_value=14, value=7, 
                              help="Number of days to forecast ahead")
 
     st.markdown("---")
-    fetch_button = st.button("🚀 Get Forecast", type="primary", use_container_width=True)
+    st.markdown("### 🔄 Actions")
+    fetch_button = st.button("🚀 Fetch Weather Data", type="primary", use_container_width=True)
 
     st.markdown("---")
-    st.markdown("<p style='text-align: center; color: #1a5f2a; font-weight: 600;'>Victory Farms Ltd</p>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #00a8e8; font-size: 0.8rem;'>Technology & Innovation</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #ffffff; font-weight: 600; font-size: 1rem;'>Victory Farms Ltd</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #aaaaaa; font-size: 0.85rem; font-style: italic;'>Technology & Innovation</p>", unsafe_allow_html=True)
 
 # Main content with Victory Farms branding
 st.markdown('<div style="text-align: center; margin-bottom: 0.5rem;">', unsafe_allow_html=True)
@@ -367,30 +403,52 @@ if fetch_button or 'forecast_data' in st.session_state:
 
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Temperature'], name="Temperature",
-                              line=dict(color="#1a5f2a", width=2), mode='lines', fill='tozeroy',
+                              line=dict(color="#1a5f2a", width=2), 
+                              mode='lines+markers+text',
+                              text=[f"{v:.1f}" if i % 6 == 0 else "" for i, v in enumerate(df['Temperature'])],
+                              textposition="top center",
+                              textfont=dict(size=8, color="#1a5f2a"),
+                              marker=dict(size=4),
+                              fill='tozeroy',
                               fillcolor="rgba(26, 95, 42, 0.15)"),
                     row=1, col=1
                 )
 
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Wind Speed'], name="Wind Speed",
-                              line=dict(color="#00a8e8", width=2), mode='lines'),
+                              line=dict(color="#00a8e8", width=2), 
+                              mode='lines+markers+text',
+                              text=[f"{v:.1f}" if i % 6 == 0 else "" for i, v in enumerate(df['Wind Speed'])],
+                              textposition="top center",
+                              textfont=dict(size=8, color="#00a8e8"),
+                              marker=dict(size=4)),
                     row=2, col=1
                 )
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Wind Gusts'], name="Wind Gusts",
-                              line=dict(color="#ff6b6b", width=1, dash='dash'), mode='lines'),
+                              line=dict(color="#ff6b6b", width=1, dash='dash'), 
+                              mode='lines+markers',
+                              marker=dict(size=3)),
                     row=2, col=1
                 )
 
                 fig.add_trace(
                     go.Bar(x=df['Date'], y=df['Rain'], name="Rain",
-                          marker_color="#00a8e8", opacity=0.6),
+                          marker_color="#00a8e8", opacity=0.6,
+                          text=[f"{v:.1f}" if v > 0.1 else "" for v in df['Rain']],
+                          textposition="outside",
+                          textfont=dict(size=8, color="#00a8e8")),
                     row=3, col=1
                 )
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Relative Humidity'], name="Humidity",
-                              line=dict(color="#1a5f2a", width=2), mode='lines', yaxis="y4"),
+                              line=dict(color="#1a5f2a", width=2), 
+                              mode='lines+markers+text',
+                              text=[f"{v:.0f}" if i % 6 == 0 else "" for i, v in enumerate(df['Relative Humidity'])],
+                              textposition="top center",
+                              textfont=dict(size=8, color="#1a5f2a"),
+                              marker=dict(size=3),
+                              yaxis="y4"),
                     row=3, col=1
                 )
 
@@ -401,6 +459,27 @@ if fetch_button or 'forecast_data' in st.session_state:
                     template="plotly_white",
                     title_text=f"{location} - Complete Forecast Overview",
                     title_font_color="#1a5f2a"
+                )
+
+                # Update x-axes to show hours
+                fig.update_xaxes(
+                    tickformat="%H:%M<br>%b %d",
+                    tickangle=45,
+                    dtick=6*3600000,  # 6 hour intervals
+                    row=1, col=1
+                )
+                fig.update_xaxes(
+                    tickformat="%H:%M<br>%b %d",
+                    tickangle=45,
+                    dtick=6*3600000,
+                    row=2, col=1
+                )
+                fig.update_xaxes(
+                    tickformat="%H:%M<br>%b %d",
+                    tickangle=45,
+                    dtick=6*3600000,
+                    title_text="Date & Time",
+                    row=3, col=1
                 )
 
                 fig.update_yaxes(title_text="°C", row=1, col=1)
@@ -430,7 +509,26 @@ if fetch_button or 'forecast_data' in st.session_state:
                         )
                         fig_var.update_layout(height=250, showlegend=False)
                         rgba_fill = hex_to_rgba(color, 0.15)
-                        fig_var.update_traces(fill='tozeroy', fillcolor=rgba_fill)
+
+                        # Add data labels every 6 hours
+                        fig_var.update_traces(
+                            fill='tozeroy', 
+                            fillcolor=rgba_fill,
+                            mode='lines+markers+text',
+                            text=[f"{v:.1f}" if i % 6 == 0 else "" for i, v in enumerate(df[var])],
+                            textposition="top center",
+                            textfont=dict(size=8, color=color),
+                            marker=dict(size=4)
+                        )
+
+                        # Show hours on x-axis
+                        fig_var.update_xaxes(
+                            tickformat="%H:%M",
+                            tickangle=0,
+                            dtick=6*3600000,
+                            title_text="Hour"
+                        )
+
                         st.plotly_chart(fig_var, use_container_width=True)
 
             with loc_tab2:
@@ -469,6 +567,18 @@ if fetch_button or 'forecast_data' in st.session_state:
                         template="plotly_white"
                     )
                     fig_dir.update_layout(height=280)
+                    fig_dir.update_xaxes(
+                        tickformat="%H:%M<br>%b %d",
+                        tickangle=45,
+                        dtick=6*3600000,
+                        title_text="Date & Time"
+                    )
+                    fig_dir.update_traces(
+                        text=[f"{v:.0f}°" if i % 6 == 0 else "" for i, v in enumerate(df['Wind Direction'])],
+                        textposition="top center",
+                        textfont=dict(size=8),
+                        mode='markers+text'
+                    )
                     st.plotly_chart(fig_dir, use_container_width=True)
 
             with loc_tab3:
