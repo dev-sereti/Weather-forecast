@@ -405,12 +405,12 @@ if fetch_button or 'forecast_data' in st.session_state:
                     go.Scatter(x=df['Date'], y=df['Temperature'], name="Temperature",
                               line=dict(color="#1a5f2a", width=2), 
                               mode='lines+markers+text',
-                              text=[f"{v:.1f}" if i % 6 == 0 else "" for i, v in enumerate(df['Temperature'])],
+                              text=[f"{v:.1f}" for v in df['Temperature']],
                               textposition="top center",
-                              textfont=dict(size=8, color="#1a5f2a"),
-                              marker=dict(size=4),
+                              textfont=dict(size=9, color="#ffffff"),
+                              marker=dict(size=5, color="#1a5f2a"),
                               fill='tozeroy',
-                              fillcolor="rgba(26, 95, 42, 0.15)"),
+                              fillcolor="rgba(26, 95, 42, 0.2)"),
                     row=1, col=1
                 )
 
@@ -418,36 +418,39 @@ if fetch_button or 'forecast_data' in st.session_state:
                     go.Scatter(x=df['Date'], y=df['Wind Speed'], name="Wind Speed",
                               line=dict(color="#00a8e8", width=2), 
                               mode='lines+markers+text',
-                              text=[f"{v:.1f}" if i % 6 == 0 else "" for i, v in enumerate(df['Wind Speed'])],
+                              text=[f"{v:.1f}" for v in df['Wind Speed']],
                               textposition="top center",
-                              textfont=dict(size=8, color="#00a8e8"),
-                              marker=dict(size=4)),
+                              textfont=dict(size=9, color="#ffffff"),
+                              marker=dict(size=5, color="#00a8e8")),
                     row=2, col=1
                 )
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Wind Gusts'], name="Wind Gusts",
                               line=dict(color="#ff6b6b", width=1, dash='dash'), 
-                              mode='lines+markers',
-                              marker=dict(size=3)),
+                              mode='lines+markers+text',
+                              text=[f"{v:.1f}" for v in df['Wind Gusts']],
+                              textposition="top center",
+                              textfont=dict(size=8, color="#ffaaaa"),
+                              marker=dict(size=4, color="#ff6b6b")),
                     row=2, col=1
                 )
 
                 fig.add_trace(
                     go.Bar(x=df['Date'], y=df['Rain'], name="Rain",
-                          marker_color="#00a8e8", opacity=0.6,
-                          text=[f"{v:.1f}" if v > 0.1 else "" for v in df['Rain']],
+                          marker_color="#00a8e8", opacity=0.7,
+                          text=[f"{v:.1f}" if v > 0.01 else "" for v in df['Rain']],
                           textposition="outside",
-                          textfont=dict(size=8, color="#00a8e8")),
+                          textfont=dict(size=9, color="#ffffff")),
                     row=3, col=1
                 )
                 fig.add_trace(
                     go.Scatter(x=df['Date'], y=df['Relative Humidity'], name="Humidity",
                               line=dict(color="#1a5f2a", width=2), 
                               mode='lines+markers+text',
-                              text=[f"{v:.0f}" if i % 6 == 0 else "" for i, v in enumerate(df['Relative Humidity'])],
+                              text=[f"{v:.0f}" for v in df['Relative Humidity']],
                               textposition="top center",
-                              textfont=dict(size=8, color="#1a5f2a"),
-                              marker=dict(size=3),
+                              textfont=dict(size=9, color="#ffffff"),
+                              marker=dict(size=4, color="#1a5f2a"),
                               yaxis="y4"),
                     row=3, col=1
                 )
@@ -461,38 +464,41 @@ if fetch_button or 'forecast_data' in st.session_state:
                     title_font_color="#1a5f2a"
                 )
 
-                # Smart x-axis: single day shows hours, multiple days show dates
+                # Use actual data timestamps for x-axis ticks
                 num_days = (df['Date'].max() - df['Date'].min()).days + 1
 
+                # Get actual tick values from data (every 3 hours to avoid crowding)
+                tick_vals = df['Date'].iloc[::3].tolist()
+                if len(df) > 0 and df['Date'].iloc[-1] not in tick_vals:
+                    tick_vals.append(df['Date'].iloc[-1])
+
                 if num_days <= 1:
-                    # Single day: show hours (00:00, 06:00, 12:00, 18:00)
-                    tick_format = "%H:%M"
-                    dtick_val = 6*3600000
-                    tick_angle = 0
+                    tick_text = [d.strftime("%H:%M") for d in tick_vals]
                     x_title = "Hour"
                 else:
-                    # Multiple days: show date labels at day boundaries
-                    tick_format = "%b %d"
-                    dtick_val = 24*3600000
-                    tick_angle = 0
-                    x_title = "Date"
+                    tick_text = [d.strftime("%b %d
+%H:%M") for d in tick_vals]
+                    x_title = "Date & Hour"
 
                 fig.update_xaxes(
-                    tickformat=tick_format,
-                    tickangle=tick_angle,
-                    dtick=dtick_val,
+                    tickmode="array",
+                    tickvals=tick_vals,
+                    ticktext=tick_text,
+                    tickangle=0,
                     row=1, col=1
                 )
                 fig.update_xaxes(
-                    tickformat=tick_format,
-                    tickangle=tick_angle,
-                    dtick=dtick_val,
+                    tickmode="array",
+                    tickvals=tick_vals,
+                    ticktext=tick_text,
+                    tickangle=0,
                     row=2, col=1
                 )
                 fig.update_xaxes(
-                    tickformat=tick_format,
-                    tickangle=tick_angle,
-                    dtick=dtick_val,
+                    tickmode="array",
+                    tickvals=tick_vals,
+                    ticktext=tick_text,
+                    tickangle=0,
                     title_text=x_title,
                     row=3, col=1
                 )
@@ -523,35 +529,40 @@ if fetch_button or 'forecast_data' in st.session_state:
                             template="plotly_white"
                         )
                         fig_var.update_layout(height=250, showlegend=False)
-                        rgba_fill = hex_to_rgba(color, 0.15)
+                        rgba_fill = hex_to_rgba(color, 0.2)
 
-                        # Add data labels every 6 hours
+                        # Add data labels for ALL points with white text
                         fig_var.update_traces(
                             fill='tozeroy', 
                             fillcolor=rgba_fill,
                             mode='lines+markers+text',
-                            text=[f"{v:.1f}" if i % 6 == 0 else "" for i, v in enumerate(df[var])],
+                            text=[f"{v:.1f}" for v in df[var]],
                             textposition="top center",
-                            textfont=dict(size=8, color=color),
-                            marker=dict(size=4)
+                            textfont=dict(size=9, color="#ffffff"),
+                            marker=dict(size=5, color=color)
                         )
 
-                        # Smart x-axis based on forecast duration
+                        # Use actual data timestamps for ticks
+                        tick_vals_var = df['Date'].iloc[::3].tolist()
+                        if len(df) > 0 and df['Date'].iloc[-1] not in tick_vals_var:
+                            tick_vals_var.append(df['Date'].iloc[-1])
+
                         num_days_var = (df['Date'].max() - df['Date'].min()).days + 1
                         if num_days_var <= 1:
-                            fig_var.update_xaxes(
-                                tickformat="%H:%M",
-                                tickangle=0,
-                                dtick=6*3600000,
-                                title_text="Hour"
-                            )
+                            tick_text_var = [d.strftime("%H:%M") for d in tick_vals_var]
+                            x_title_var = "Hour"
                         else:
-                            fig_var.update_xaxes(
-                                tickformat="%b %d",
-                                tickangle=0,
-                                dtick=24*3600000,
-                                title_text="Date"
-                            )
+                            tick_text_var = [d.strftime("%b %d
+%H:%M") for d in tick_vals_var]
+                            x_title_var = "Date & Hour"
+
+                        fig_var.update_xaxes(
+                            tickmode="array",
+                            tickvals=tick_vals_var,
+                            ticktext=tick_text_var,
+                            tickangle=0,
+                            title_text=x_title_var
+                        )
 
                         st.plotly_chart(fig_var, use_container_width=True)
 
@@ -591,21 +602,26 @@ if fetch_button or 'forecast_data' in st.session_state:
                         template="plotly_white"
                     )
                     fig_dir.update_layout(height=280)
+                    tick_vals_wind = df['Date'].iloc[::3].tolist()
+                    if len(df) > 0 and df['Date'].iloc[-1] not in tick_vals_wind:
+                        tick_vals_wind.append(df['Date'].iloc[-1])
+
                     num_days_wind = (df['Date'].max() - df['Date'].min()).days + 1
                     if num_days_wind <= 1:
-                        fig_dir.update_xaxes(
-                            tickformat="%H:%M",
-                            tickangle=0,
-                            dtick=6*3600000,
-                            title_text="Hour"
-                        )
+                        tick_text_wind = [d.strftime("%H:%M") for d in tick_vals_wind]
+                        x_title_wind = "Hour"
                     else:
-                        fig_dir.update_xaxes(
-                            tickformat="%b %d",
-                            tickangle=0,
-                            dtick=24*3600000,
-                            title_text="Date"
-                        )
+                        tick_text_wind = [d.strftime("%b %d
+%H:%M") for d in tick_vals_wind]
+                        x_title_wind = "Date & Hour"
+
+                    fig_dir.update_xaxes(
+                        tickmode="array",
+                        tickvals=tick_vals_wind,
+                        ticktext=tick_text_wind,
+                        tickangle=0,
+                        title_text=x_title_wind
+                    )
                     fig_dir.update_traces(
                         text=[f"{v:.0f}°" if i % 6 == 0 else "" for i, v in enumerate(df['Wind Direction'])],
                         textposition="top center",
