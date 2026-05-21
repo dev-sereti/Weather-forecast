@@ -461,24 +461,39 @@ if fetch_button or 'forecast_data' in st.session_state:
                     title_font_color="#1a5f2a"
                 )
 
-                # Update x-axes to show hours
+                # Smart x-axis: single day shows hours, multiple days show dates
+                num_days = (df['Date'].max() - df['Date'].min()).days + 1
+
+                if num_days <= 1:
+                    # Single day: show hours (00:00, 06:00, 12:00, 18:00)
+                    tick_format = "%H:%M"
+                    dtick_val = 6*3600000
+                    tick_angle = 0
+                    x_title = "Hour"
+                else:
+                    # Multiple days: show date labels at day boundaries
+                    tick_format = "%b %d"
+                    dtick_val = 24*3600000
+                    tick_angle = 0
+                    x_title = "Date"
+
                 fig.update_xaxes(
-                    tickformat="%H:%M<br>%b %d",
-                    tickangle=45,
-                    dtick=6*3600000,  # 6 hour intervals
+                    tickformat=tick_format,
+                    tickangle=tick_angle,
+                    dtick=dtick_val,
                     row=1, col=1
                 )
                 fig.update_xaxes(
-                    tickformat="%H:%M<br>%b %d",
-                    tickangle=45,
-                    dtick=6*3600000,
+                    tickformat=tick_format,
+                    tickangle=tick_angle,
+                    dtick=dtick_val,
                     row=2, col=1
                 )
                 fig.update_xaxes(
-                    tickformat="%H:%M<br>%b %d",
-                    tickangle=45,
-                    dtick=6*3600000,
-                    title_text="Date & Time",
+                    tickformat=tick_format,
+                    tickangle=tick_angle,
+                    dtick=dtick_val,
+                    title_text=x_title,
                     row=3, col=1
                 )
 
@@ -521,13 +536,22 @@ if fetch_button or 'forecast_data' in st.session_state:
                             marker=dict(size=4)
                         )
 
-                        # Show hours on x-axis
-                        fig_var.update_xaxes(
-                            tickformat="%H:%M",
-                            tickangle=0,
-                            dtick=6*3600000,
-                            title_text="Hour"
-                        )
+                        # Smart x-axis based on forecast duration
+                        num_days_var = (df['Date'].max() - df['Date'].min()).days + 1
+                        if num_days_var <= 1:
+                            fig_var.update_xaxes(
+                                tickformat="%H:%M",
+                                tickangle=0,
+                                dtick=6*3600000,
+                                title_text="Hour"
+                            )
+                        else:
+                            fig_var.update_xaxes(
+                                tickformat="%b %d",
+                                tickangle=0,
+                                dtick=24*3600000,
+                                title_text="Date"
+                            )
 
                         st.plotly_chart(fig_var, use_container_width=True)
 
@@ -567,12 +591,21 @@ if fetch_button or 'forecast_data' in st.session_state:
                         template="plotly_white"
                     )
                     fig_dir.update_layout(height=280)
-                    fig_dir.update_xaxes(
-                        tickformat="%H:%M<br>%b %d",
-                        tickangle=45,
-                        dtick=6*3600000,
-                        title_text="Date & Time"
-                    )
+                    num_days_wind = (df['Date'].max() - df['Date'].min()).days + 1
+                    if num_days_wind <= 1:
+                        fig_dir.update_xaxes(
+                            tickformat="%H:%M",
+                            tickangle=0,
+                            dtick=6*3600000,
+                            title_text="Hour"
+                        )
+                    else:
+                        fig_dir.update_xaxes(
+                            tickformat="%b %d",
+                            tickangle=0,
+                            dtick=24*3600000,
+                            title_text="Date"
+                        )
                     fig_dir.update_traces(
                         text=[f"{v:.0f}°" if i % 6 == 0 else "" for i, v in enumerate(df['Wind Direction'])],
                         textposition="top center",
