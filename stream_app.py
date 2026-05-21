@@ -85,6 +85,40 @@ st.markdown("""
     div[data-testid="stSidebarUserContent"] {
         background-color: #f8fdf8;
     }
+    /* Fix sidebar text visibility */
+    div[data-testid="stSidebarUserContent"] h1,
+    div[data-testid="stSidebarUserContent"] h2,
+    div[data-testid="stSidebarUserContent"] h3,
+    div[data-testid="stSidebarUserContent"] h4 {
+        color: #1a5f2a !important;
+    }
+    div[data-testid="stSidebarUserContent"] p,
+    div[data-testid="stSidebarUserContent"] label,
+    div[data-testid="stSidebarUserContent"] .stMarkdown {
+        color: #333333 !important;
+    }
+    div[data-testid="stSidebarUserContent"] .stSlider label {
+        color: #1a5f2a !important;
+        font-weight: 600 !important;
+    }
+    /* Checkbox labels */
+    div[data-testid="stSidebarUserContent"] [data-testid="stCheckbox"] label {
+        color: #333333 !important;
+        font-weight: 500 !important;
+    }
+    /* Section headers in sidebar */
+    div[data-testid="stSidebarUserContent"] .stMarkdown h3 {
+        color: #1a5f2a !important;
+        font-weight: 700 !important;
+        margin-top: 1rem !important;
+    }
+    /* Ensure all sidebar text is dark enough */
+    section[data-testid="stSidebar"] {
+        color: #333333;
+    }
+    section[data-testid="stSidebar"] .stCheckbox label span {
+        color: #333333 !important;
+    }
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
     }
@@ -237,15 +271,15 @@ with st.sidebar:
     st.markdown("<p style='color: #666; font-size: 0.8rem; margin-top: 0;'>Aquaculture Weather Intelligence</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("### ⚙️ Forecast Settings")
+    st.markdown("<h3 style='color: #1a5f2a; font-weight: 700;'>⚙️ Forecast Settings</h3>", unsafe_allow_html=True)
 
-    st.markdown("### 📍 Farm Locations")
+    st.markdown("<h3 style='color: #1a5f2a; font-weight: 700;'>📍 Farm Locations</h3>", unsafe_allow_html=True)
     selected_locations = []
     for loc in LOCATIONS.keys():
         if st.checkbox(loc, value=True, key=f"chk_{loc}"):
             selected_locations.append(loc)
 
-    st.markdown("### 📅 Forecast Range")
+    st.markdown("<h3 style='color: #1a5f2a; font-weight: 700;'>📅 Forecast Range</h3>", unsafe_allow_html=True)
     forecast_days = st.slider("Forecast Days", min_value=1, max_value=14, value=7, 
                              help="Number of days to forecast ahead")
 
@@ -528,4 +562,4 @@ else:
             st.markdown(f"<small style='color: #666;'>{desc}</small>", unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("<p style='text-align: center; color: #999; margin-top: 2rem;'><small>Victory Farms Ltd - Technology & Innovation - Power BI Weather Intelligence</small></p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #999; margin-top: 2rem;'><small>🐟 Victory Farms Ltd - Technology & Innovation - Power BI Weather Intelligence</small></p>", unsafe_allow_html=True)
