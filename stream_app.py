@@ -528,4 +528,4 @@ else:
             st.markdown(f"<small style='color: #666;'>{desc}</small>", unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("<p style='text-align: center; color: #999; margin-top: 2rem;'><small>🐟 Victory Farms Ltd - Technology & Innovation - Power BI Weather Intelligence</small></p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #999; margin-top: 2rem;'><small>Victory Farms Ltd - Technology & Innovation - Power BI Weather Intelligence</small></p>", unsafe_allow_html=True)
