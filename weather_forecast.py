@@ -23,7 +23,7 @@ params = {
 responses = openmeteo.weather_api(url, params=params)
 
 # Output Excel path
-output_dir = r"C:\Users\VF4492\OneDrive - Victory Farms Ltd\Technology and Innovation - Power BI\Weather"
+output_dir = r"C:\Users\VF4492\OneDrive - Victory Farms Ltd\Technology and Innovation - Power BI"
 os.makedirs(output_dir, exist_ok=True)
 output_file = os.path.join(output_dir, "weather_data.xlsx")
 

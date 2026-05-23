@@ -199,7 +199,7 @@ def to_excel_combined(dfs_dict):
             df.to_excel(writer, sheet_name=f'{location}', index=False)
     return output.getvalue()
 
-# ── Sidebar ──────────────
+# ── Sidebar ───────────────
 with st.sidebar:
     st.markdown('<div class="sidebar-brand">', unsafe_allow_html=True)
     st.markdown("<h2 style='color:#ffffff;margin-bottom:0;font-size:1.3rem;'>🐟 VICTORY<span style='color:#00a8e8;'>FARMS</span></h2>", unsafe_allow_html=True)
@@ -224,15 +224,14 @@ with st.sidebar:
     st.markdown("<p style='text-align:center;color:#ffffff;font-weight:600;font-size:1rem;'>Victory Farms Ltd</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;color:#aaaaaa;font-size:0.85rem;font-style:italic;'>Technology & Innovation</p>", unsafe_allow_html=True)
 
-# ── Header ────────────────
+# ── Header ─────────────────
 st.markdown('<div style="text-align:center;margin-bottom:0.5rem;">', unsafe_allow_html=True)
 st.markdown("<h1 style='color:#1a5f2a;font-size:2.5rem;margin-bottom:0;'>🐟 <span class='vf-brand-text'>VICTORY</span><span class='vf-blue'>FARMS</span></h1>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="main-header" style="margin-top:0;font-size:1.8rem;">Weather Forecast Dashboard</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Hourly forecast for aquaculture operations</div>', unsafe_allow_html=True)
 
-# ── Main 
-
+# ── Main ───────────────────
 if fetch_button or 'forecast_data' in st.session_state:
     if fetch_button:
         if not selected_locations:
@@ -267,7 +266,7 @@ if fetch_button or 'forecast_data' in st.session_state:
             "Click **Fetch Weather Data** in the sidebar to reload with the new settings."
         )
 
-    # ── Summary metrics 
+    # ── Summary metrics ─
     st.markdown("### 📊 Forecast Summary")
     summary_cols = st.columns(len(forecast_data))
     for i, (location, df) in enumerate(forecast_data.items()):
@@ -296,12 +295,11 @@ if fetch_button or 'forecast_data' in st.session_state:
             loc_tab1, loc_tab2, loc_tab3, loc_tab4 = st.tabs(["📈 Charts","🧭 Wind Analysis","📋 Data Table","📥 Export"])
 
             with loc_tab1:
-                # ── Adaptive label interval ────────────────
-                lbl_every = label_interval(df)   # e.g. 12 for a 7-day dataset
-                # x-axis ticks: show every 6 hrs (denser than labels, lighter than every hour)
-                tick_step  = max(6, lbl_every // 2)
-                tick_vals  = df['Date'].iloc[::tick_step].tolist()
-                num_days   = (df['Date'].max() - df['Date'].min()).days + 1
+                # ── Shared axis config
+                lbl_every = label_interval(df)
+                tick_step = max(6, lbl_every // 2)
+                tick_vals = df['Date'].iloc[::tick_step].tolist()
+                num_days  = (df['Date'].max() - df['Date'].min()).days + 1
                 if num_days <= 2:
                     tick_text = [d.strftime("%H:%M") for d in tick_vals]
                     x_title   = "Hour"
@@ -309,119 +307,110 @@ if fetch_button or 'forecast_data' in st.session_state:
                     tick_text = [d.strftime("%b %d\n%H:%M") for d in tick_vals]
                     x_title   = "Date & Hour"
 
-                fig = make_subplots(
-                    rows=3, cols=1,
-                    shared_xaxes=True,
-                    vertical_spacing=0.08,
-                    subplot_titles=("🌡️ Temperature (°C)","💨 Wind Speed & Gusts (m/s)","🌧️ Rain & Humidity"),
-                    row_heights=[0.35, 0.35, 0.3]
-                )
+                def apply_xaxis(fig):
+                    fig.update_xaxes(
+                        tickmode="array", tickvals=tick_vals, ticktext=tick_text,
+                        tickangle=-45, tickfont=dict(size=9), title_text=x_title
+                    )
+                    return fig
 
-                # ── Temperature ─────────
-                fig.add_trace(go.Scatter(
+                CHART_H = 300  # height for each individual chart
+
+                # ── 1. Temperature ───────────────────────────────────────────
+                fig1 = go.Figure()
+                fig1.add_trace(go.Scatter(
                     x=df['Date'], y=df['Temperature'], name="Temperature",
                     line=dict(color="#1a5f2a", width=1.5),
                     mode='lines+markers+text',
-                    # ALL hourly points plotted; labels only every lbl_every hours
                     text=sparse_labels(df['Temperature'], lbl_every, "{:.1f}"),
-                    textposition="top center",
-                    textfont=dict(size=8, color="#1a5f2a"),
+                    textposition="top center", textfont=dict(size=8, color="#1a5f2a"),
                     marker=dict(size=3, color="#1a5f2a"),
-                    fill='tozeroy', fillcolor="rgba(26,95,42,0.15)"
-                ), row=1, col=1)
+                    fill='tozeroy', fillcolor="rgba(26,95,42,0.15)",
+                    hovertemplate="<b>%{x|%b %d %H:%M}</b><br>Temperature: %{y:.1f}°C<extra></extra>"
+                ))
+                fig1.update_layout(
+                    title="🌡️ Temperature (°C)", title_font_color="#1a5f2a",
+                    height=CHART_H, template="plotly_white", showlegend=False,
+                    yaxis_title="°C", margin=dict(t=50, b=50, l=50, r=20)
+                )
+                st.plotly_chart(apply_xaxis(fig1), use_container_width=True)
 
-                # ── Wind Speed ───────────
-                fig.add_trace(go.Scatter(
+                # ── 2. Wind Speed ────────────────────────────────────────────
+                fig2 = go.Figure()
+                fig2.add_trace(go.Scatter(
                     x=df['Date'], y=df['Wind Speed'], name="Wind Speed",
                     line=dict(color="#00a8e8", width=1.5),
                     mode='lines+markers+text',
                     text=sparse_labels(df['Wind Speed'], lbl_every, "{:.1f}"),
-                    textposition="top center",
-                    textfont=dict(size=8, color="#00a8e8"),
-                    marker=dict(size=3, color="#00a8e8")
-                ), row=2, col=1)
+                    textposition="top center", textfont=dict(size=8, color="#00a8e8"),
+                    marker=dict(size=3, color="#00a8e8"),
+                    fill='tozeroy', fillcolor="rgba(0,168,232,0.15)",
+                    hovertemplate="<b>%{x|%b %d %H:%M}</b><br>Wind Speed: %{y:.1f} m/s<extra></extra>"
+                ))
+                fig2.update_layout(
+                    title="💨 Wind Speed (m/s)", title_font_color="#00a8e8",
+                    height=CHART_H, template="plotly_white", showlegend=False,
+                    yaxis_title="m/s", margin=dict(t=50, b=50, l=50, r=20)
+                )
+                st.plotly_chart(apply_xaxis(fig2), use_container_width=True)
 
-                # ── Wind Gusts (labels offset by half-interval so they don't clash with Wind Speed labels) ──
+                # ── 3. Wind Gusts ────────────────────────────────────────────
+                fig3 = go.Figure()
                 gust_offset = lbl_every // 2
-                fig.add_trace(go.Scatter(
+                fig3.add_trace(go.Scatter(
                     x=df['Date'], y=df['Wind Gusts'], name="Wind Gusts",
-                    line=dict(color="#ff6b6b", width=1, dash='dash'),
+                    line=dict(color="#ff6b6b", width=1.5, dash='dash'),
                     mode='lines+markers+text',
                     text=[f"{v:.1f}" if i % lbl_every == gust_offset else ""
                           for i, v in enumerate(df['Wind Gusts'])],
-                    textposition="bottom center",
-                    textfont=dict(size=7, color="#ff6b6b"),
-                    marker=dict(size=2, color="#ff6b6b")
-                ), row=2, col=1)
+                    textposition="top center", textfont=dict(size=8, color="#ff6b6b"),
+                    marker=dict(size=3, color="#ff6b6b"),
+                    fill='tozeroy', fillcolor="rgba(255,107,107,0.12)",
+                    hovertemplate="<b>%{x|%b %d %H:%M}</b><br>Wind Gusts: %{y:.1f} m/s<extra></extra>"
+                ))
+                fig3.update_layout(
+                    title="🌬️ Wind Gusts (m/s)", title_font_color="#ff6b6b",
+                    height=CHART_H, template="plotly_white", showlegend=False,
+                    yaxis_title="m/s", margin=dict(t=50, b=50, l=50, r=20)
+                )
+                st.plotly_chart(apply_xaxis(fig3), use_container_width=True)
 
-                # Rain bars
-                fig.add_trace(go.Bar(
+                # ── 4. Rain 
+                fig4 = go.Figure()
+                fig4.add_trace(go.Bar(
                     x=df['Date'], y=df['Rain'], name="Rain",
-                    marker_color="#00a8e8", opacity=0.6,
-                    # Label only significant rain at label intervals
+                    marker_color="#00a8e8", opacity=0.7,
                     text=[f"{v:.1f}" if (v > 0.1 and i % lbl_every == 0) else ""
                           for i, v in enumerate(df['Rain'])],
-                    textposition="outside",
-                    textfont=dict(size=8, color="#005f8a")
-                ), row=3, col=1)
+                    textposition="outside", textfont=dict(size=8, color="#005f8a"),
+                    hovertemplate="<b>%{x|%b %d %H:%M}</b><br>Rain: %{y:.2f} mm<extra></extra>"
+                ))
+                fig4.update_layout(
+                    title="🌧️ Rain (mm)", title_font_color="#005f8a",
+                    height=CHART_H, template="plotly_white", showlegend=False,
+                    yaxis_title="mm", margin=dict(t=50, b=50, l=50, r=20)
+                )
+                st.plotly_chart(apply_xaxis(fig4), use_container_width=True)
 
-                # ── Humidity line on secondary y-axis (right side) 
-                fig.add_trace(go.Scatter(
+                # ── 5. Relative Humidity ─────────────────────────────────────
+                fig5 = go.Figure()
+                fig5.add_trace(go.Scatter(
                     x=df['Date'], y=df['Relative Humidity'], name="Humidity",
                     line=dict(color="#2e8b57", width=1.5),
                     mode='lines+markers+text',
                     text=sparse_labels(df['Relative Humidity'], lbl_every, "{:.0f}"),
-                    textposition="top center",
-                    textfont=dict(size=8, color="#2e8b57"),
+                    textposition="top center", textfont=dict(size=8, color="#2e8b57"),
                     marker=dict(size=3, color="#2e8b57"),
-                    yaxis="y4"
-                ), row=3, col=1)
-
-                fig.update_layout(
-                    height=750,
-                    showlegend=True,
-                    legend=dict(orientation="h", yanchor="bottom", y=-0.12, xanchor="center", x=0.5),
-                    template="plotly_white",
-                    title_text=f"{location} — Hourly Forecast ({len(df)} data points)",
-                    title_font_color="#1a5f2a",
-                    margin=dict(t=80, b=60)
+                    fill='tozeroy', fillcolor="rgba(46,139,87,0.15)",
+                    hovertemplate="<b>%{x|%b %d %H:%M}</b><br>Humidity: %{y:.0f}%<extra></extra>"
+                ))
+                fig5.update_layout(
+                    title="💧 Relative Humidity (%)", title_font_color="#2e8b57",
+                    height=CHART_H, template="plotly_white", showlegend=False,
+                    yaxis_title="%", yaxis_range=[0, 105],
+                    margin=dict(t=50, b=50, l=50, r=20)
                 )
-                for row in [1, 2, 3]:
-                    fig.update_xaxes(tickmode="array", tickvals=tick_vals, ticktext=tick_text,
-                                     tickangle=-45, tickfont=dict(size=9), row=row, col=1)
-                fig.update_xaxes(title_text=x_title, row=3, col=1)
-                fig.update_yaxes(title_text="°C",  row=1, col=1)
-                fig.update_yaxes(title_text="m/s", row=2, col=1)
-                fig.update_yaxes(title_text="mm",  row=3, col=1)
-                fig.update_yaxes(title_text="%",   row=3, col=1, overlaying="y3", side="right", showgrid=False)
-                st.plotly_chart(fig, use_container_width=True)
-
-                # ── Detailed mini-charts (no text labels — hover for values) ──
-                st.markdown("**Detailed Variable Views** *(hover for exact hourly values)*")
-                var_cols  = st.columns(3)
-                variables = [
-                    ("Temperature","°C","🌡️","#1a5f2a"),
-                    ("Wind Speed","m/s","💨","#00a8e8"),
-                    ("Rain","mm","🌧️","#2e8b57")
-                ]
-                for col, (var, unit, emoji, color) in zip(var_cols, variables):
-                    with col:
-                        fig_var = px.area(df, x="Date", y=var,
-                                          title=f"{emoji} {var} ({unit})",
-                                          labels={var: f"{var} ({unit})"},
-                                          color_discrete_sequence=[color],
-                                          template="plotly_white")
-                        fig_var.update_layout(height=220, showlegend=False, margin=dict(t=40,b=30,l=40,r=10))
-                        fig_var.update_traces(
-                            fill='tozeroy', fillcolor=hex_to_rgba(color, 0.2),
-                            mode='lines+markers',       # no text — hover shows exact value
-                            marker=dict(size=3, color=color),
-                            line=dict(width=1.2),
-                            hovertemplate=f"<b>%{{x|%b %d %H:%M}}</b><br>{var}: %{{y:.2f}} {unit}<extra></extra>"
-                        )
-                        fig_var.update_xaxes(tickmode="array", tickvals=tick_vals,
-                                             ticktext=tick_text, tickangle=-45, tickfont=dict(size=8))
-                        st.plotly_chart(fig_var, use_container_width=True)
+                st.plotly_chart(apply_xaxis(fig5), use_container_width=True)
 
             with loc_tab2:
                 wind_cols = st.columns([2,1])
@@ -487,7 +476,7 @@ if fetch_button or 'forecast_data' in st.session_state:
             st.markdown('</div>', unsafe_allow_html=True)
             st.markdown("---")
 
-    # ── Combined export 
+    # ── Combined export ─
     st.markdown("### 📥 Combined Export")
     comb_col1, comb_col2 = st.columns(2)
     with comb_col1:
